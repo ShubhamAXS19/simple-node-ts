@@ -9,5 +9,5 @@ build/
 .vscode/
 *.log
 
-ssh-key
-ssh-key.pub
+deploy-key
+deploy-key.pub

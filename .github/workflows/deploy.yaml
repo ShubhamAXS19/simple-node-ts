@@ -17,53 +17,53 @@ jobs:
         node-version: [20.x]
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
 
-    - name: Install Dependencies
-      run: npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-    - name: Run Build
-      run: npm run build
-      if: success()
+      - name: Run Build
+        run: npm run build
+        if: success()
 
-    - name: Setup SSH
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy-key
-        chmod 600 ~/.ssh/deploy-key
-        ssh-keyscan -H 13.232.193.173 >> ~/.ssh/known_hosts
+      - name: Setup SSH
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy-key
+          chmod 600 ~/.ssh/deploy-key
+          ssh-keyscan -H 13.232.193.173 >> ~/.ssh/known_hosts
 
-    - name: Deploy to EC2
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      env:
-        DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: 13.232.193.173
-        USERNAME: ubuntu
-        PM2_APP_NAME: your-app-name
-      run: |
-        ssh -i ~/.ssh/deploy-key ubuntu@13.232.193.173 '
-          if [ ! -d /var/www/your-app-name ]; then
-            git clone https://github.com/YOUR-USERNAME/your-app-name.git /var/www/your-app-name;
-          fi
-          cd /var/www/your-app-name && \
-          git pull origin main && \
-          npm ci --production && \
-          npm run build && \
-          if ! command -v pm2 > /dev/null; then
-            sudo npm install -g pm2;
-          fi
-          pm2 reload ecosystem.config.js --env production || \
-          pm2 start ecosystem.config.js --env production'
+      - name: Deploy to EC2
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: 13.232.193.173
+          USERNAME: ubuntu
+          PM2_APP_NAME: your-app-name
+        run: |
+          ssh -i ~/.ssh/deploy-key ubuntu@13.232.193.173 '
+            if [ ! -d /var/www/your-app-name ]; then
+              git clone https://github.com/ShubhamAXS19/your-app-name.git /var/www/your-app-name;
+            fi
+            cd /var/www/your-app-name && \
+            git pull origin main && \
+            npm ci --production && \
+            npm run build && \
+            if ! command -v pm2 > /dev/null; then
+              sudo npm install -g pm2;
+            fi
+            pm2 reload ecosystem.config.js --env production || \
+            pm2 start ecosystem.config.js --env production'
 
-    - name: Health Check
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        sleep 10
-        curl --fail http://13.232.193.173:9000/health || exit 1
+      - name: Health Check
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          sleep 10
+          curl --fail http://13.232.193.173:9000/health || exit 1

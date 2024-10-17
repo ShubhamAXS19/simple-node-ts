@@ -49,16 +49,31 @@ jobs:
           PM2_APP_NAME: your-app-name
         run: |
           ssh -i ~/.ssh/deploy-key ubuntu@13.232.193.173 '
+            # Ensure NVM is loaded and node/npm are available
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # Loads nvm
+            
+            # Clone the repository if the directory doesn't exist
             if [ ! -d /var/www/your-app-name ]; then
-              git clone https://github.com/ShubhamAXS19/your-app-name.git /var/www/your-app-name;
+              sudo git clone https://github.com/ShubhamAXS19/simple-node-ts.git /var/www/your-app-name;
             fi
+
+            # Change to the app directory and pull the latest changes
             cd /var/www/your-app-name && \
-            git pull origin main && \
-            npm ci --production && \
-            npm run build && \
+            sudo git pull origin main && \
+            
+            # Install npm dependencies
+            sudo npm ci --production && \
+            
+            # Build the project
+            sudo npm run build && \
+            
+            # Install pm2 globally if not already installed
             if ! command -v pm2 > /dev/null; then
               sudo npm install -g pm2;
             fi
+            
+            # Reload or start the app using pm2
             pm2 reload ecosystem.config.js --env production || \
             pm2 start ecosystem.config.js --env production'
 

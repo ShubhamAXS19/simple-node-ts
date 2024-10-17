@@ -46,13 +46,13 @@ jobs:
         DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         HOST: 13.232.193.173
         USERNAME: ubuntu
-        PM2_APP_NAME: honest-bite-backend
+        PM2_APP_NAME: your-app-name
       run: |
         ssh -i ~/.ssh/deploy-key ubuntu@13.232.193.173 '
-          if [ ! -d /var/www/honest-bite-backend ]; then
-            git clone https://github.com/YOUR-USERNAME/Honest-Bite-Backend.git /var/www/honest-bite-backend;
+          if [ ! -d /var/www/your-app-name ]; then
+            git clone https://github.com/YOUR-USERNAME/your-app-name.git /var/www/your-app-name;
           fi
-          cd /var/www/honest-bite-backend && \
+          cd /var/www/your-app-name && \
           git pull origin main && \
           npm ci --production && \
           npm run build && \
